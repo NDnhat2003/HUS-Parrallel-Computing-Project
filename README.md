@@ -7,7 +7,7 @@ Install Python 3.10.11 and Visual Studio Code
 - Both source code and dataset can be download in: https://github.com/NDnhat2003/HUS-Parrallel-Computing-Project
 - Git clone or downloand the repo in somewhere
 ### 3. Create virtual environment
-- In Visual Studio Code: File - Open Folder - Select the folder contain the repo
+- In Visual Studio Code: File - Open Folder - Select the folder that contains the repo
 - Change Terminal to Command Prompt Terminal in Vscode
 - In Visual Studio Code, Terminal - New Terminal - Run `python -v venv .venv`
 - `Ctrl + Shift + P` - type `Python: Select Interpreter` - Sellect Python 3.10.11
