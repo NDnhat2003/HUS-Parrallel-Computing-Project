@@ -3,7 +3,8 @@
 1. Interpreter, Editor
    
 Install Python 3.10.11, Visual Studio Code
-3. Create virtual environment
+
+2. Create virtual environment
 
 - Create a new folder for storing project
 - In Visual Studio Code: File - Open Folder - Select that folder
