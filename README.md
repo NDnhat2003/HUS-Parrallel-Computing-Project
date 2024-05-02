@@ -1,8 +1,10 @@
 # HUS-Parrallel-Computing-Project
 ## Installation
 1. Interpreter, Editor
+   
 Install Python 3.10.11, Visual Studio Code
-2. Create virtual environment
+3. Create virtual environment
+
 - Create a new folder for storing project
 - In Visual Studio Code: File - Open Folder - Select that folder
 - Terminal - New Terminal - Run **python -v venv .venv**
