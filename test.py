@@ -96,13 +96,38 @@ class Lung_Cancer_Model:
     def training(self):
         self.cnn()
         lrd = tf.keras.callbacks.ReduceLROnPlateau(monitor = 'val_loss',patience = 3,verbose = 1,factor = 0.50, min_lr = 1e-7)
-        mcp = tf.keras.callbacks.ModelCheckpoint('CNN.h5', save_best_only=True, mode='auto', monitor='val_accuracy')
+        mcp = tf.keras.callbacks.ModelCheckpoint('CNN.keras', save_best_only=True, mode='auto', monitor='val_accuracy')
         es = tf.keras.callbacks.EarlyStopping(verbose=1, patience=3)
-        CNN_history = self.CNN.fit(self.train_dataset,validation_data=self.valid_dataset, epochs = 36,verbose = 1, callbacks=[lrd,mcp,es], shuffle=True)
-        CNN_scores = self.CNN.evaluate(self.selftest_dataset, verbose=1)
+        self.CNN_history = self.CNN.fit(self.train_dataset,validation_data=self.valid_dataset, epochs = 36,verbose = 1, callbacks=[lrd,mcp,es], shuffle=True)
+        CNN_scores = self.CNN.evaluate(self.test_dataset, verbose=1)
         self.plot_history(self.CNN_history, 'CNN')
-        self.save_history_plot(CNN_history, 'CNN', 'CNN_history_plot.png')
-    
+        # self.save_history_plot(self.CNN_history, 'CNN', 'CNN_history_plot.png')
+
+    def plot_history(self, hist, name):
+        fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+        axs[0].plot(hist.history['Accuracy'])
+        axs[0].plot(hist.history['val_Accuracy'])
+        axs[0].set_title(f'{name} Accuracy')
+        axs[0].set_ylabel('Accuracy')
+        axs[0].set_xlabel('Epoch')
+        axs[0].legend(['train', 'val', 'F1', 'Recall'], loc='upper left')
+
+        axs[1].plot(hist.history['loss'])
+        axs[1].plot(hist.history['val_loss'])
+        axs[1].set_title(f'{name} Loss')
+        axs[1].set_ylabel('Loss')
+        axs[1].set_xlabel('Epoch')
+        axs[1].legend(['train', 'val'], loc='upper left')
+
+        axs[2].plot(hist.history['Precision'])
+        axs[2].plot(hist.history['val_Precision'])
+        axs[2].set_title(f'{name} Precision')
+        axs[2].set_ylabel('Precision')
+        axs[2].set_xlabel('Epoch')
+        axs[2].legend(['train', 'val'], loc='upper left')
+
+        plt.show()
+
     def save_history_plot(self, hist, name, filename):
         fig, axs = plt.subplots(1, 3, figsize=(15, 5))
         axs[0].plot(hist.history['accuracy'])
@@ -238,7 +263,7 @@ class LCD_CNN:
         self.right_frame.grid(row=1, column=1, columnspan=2, padx=5, pady=5)
 
         # Path to the image file
-        image_path = "D:\code\AI\Lung cancer\lung\LungImages.png"
+        image_path = "methodology.png"
         my_image = ImageTk.PhotoImage(PIL.Image.open(image_path))
         image_label = Label(self.right_frame, image=my_image)
         image_label.grid(row=1, column=1,columnspan=2)
