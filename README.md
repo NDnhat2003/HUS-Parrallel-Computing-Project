@@ -8,8 +8,9 @@ Install Python 3.10.11 and Visual Studio Code
 - Git clone or downloand the repo in somewhere
 ### 3. Create virtual environment
 - In Visual Studio Code: File - Open Folder - Select the folder that contains the repo
+- In Visual Studio Code, Terminal - New Terminal
 - Change Terminal to Command Prompt Terminal in Vscode
-- In Visual Studio Code, Terminal - New Terminal - Run `python -v venv .venv`
+- Run `python -v venv .venv` in Ternminal
 - `Ctrl + Shift + P` - type `Python: Select Interpreter` - Sellect Python 3.10.11
 ### 4. Install necessary dependencies
 - Run `pip install -r requirements.txt` to install necessary dependencies
