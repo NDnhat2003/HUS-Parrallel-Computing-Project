@@ -11,7 +11,7 @@ import seaborn as sns
 
 from tkinter import *
 import PIL.Image
-from PIL import ImageTk
+from PIL import Image, ImageTk
 
 class Lung_Cancer_Model:
     def __init__(self):
@@ -190,57 +190,35 @@ class LCD_CNN:
 
     def on_leave(self, event):
         event.widget.config(bg="white", fg="black")
-        
-    # def resize_image(self, image_path, width, height):
-    #     # Open the image file
-    #     image = PIL.Image.open(image_path)
-    #     # Resize the image to fit the specified width and height
-    #     resized_image = image.resize((width, height), PIL.Image.Resampling.LANCZOS)
-    #     # Convert the resized image to a Tkinter PhotoImage
-    #     return ImageTk.PhotoImage(resized_image)
-    
+
     def show_text(self, text, frame):
-        pass
-    
-    # def show_image(self):
-    #     self.image_label.pack_forget()
-    #     resized_image = PIL.Image.open(self.image_path)
-    #     # .resize((self.width, self.height), PIL.Image.Resampling.LANCZOS)
-    #     self.image_label = Label(self.right_frame, image=ImageTk.PhotoImage(resized_image))
-    #     self.image_label.pack(fill="both", expand=True)
-        
-    #     # self.image_label = Label(self.right_frame, image=image)
-    #     # self.image_label.image = image  # Keep a reference to the image to prevent garbage collection
-        
+        pass        
         
     def __init__(self,root):
         self.root=root
-        #window size
+        
+        #Config GUI Window
         self.root.geometry("1050x600+0+0")
         self.root.title("Lung Cancer Detection")  # title of the GUI window
         self.root.config(bg="royal blue")  # specify background color
-        # img4=img4.resize((1006,500),Image.ANTIALIAS)
-        # self.photoimg4=ImageTk.PhotoImage(img4)
 
         #Title
         title_lbl=Label(root, text="Lung Cancer Detection",font=("Courier New",30,"bold"),bg="royal blue",fg="black",)
         title_lbl.grid(row=0, column=0, columnspan=2, padx=10, pady=5)
-                
-        #LEFT Frame
-        self.left_frame = Frame(root, height=600, bg='royal blue')
-        self.left_frame.grid(row=1, column=0, padx=10, pady=5)
         
+        #Start model
         self.model = Lung_Cancer_Model()
+        
         # Buttons
         button_pady = 10
-        b1=Button(self.left_frame,relief=RAISED, width=20, text="PreprocesingData",cursor="hand2",command=self.model.preprocessing,font=("Arial",15,"bold"),bg="white",fg="black")
-        b1.grid(row=1, column=0, padx=50, pady=button_pady)
-        b2=Button(self.left_frame,relief=RAISED, width=20, text="Traning Data",cursor="hand2",command=self.model.training,font=("Arial",15,"bold"),bg="white",fg="black")
-        b2.grid(row=2, column=0, padx=50, pady=button_pady)
-        b3=Button(self.left_frame,relief=RAISED, width=20, text="Prediction",cursor="hand2",command=self.model.prediction,font=("Arial",15,"bold"),bg="white",fg="black")
-        b3.grid(row=3, column=0, padx=50, pady=button_pady)
-        b4=Button(self.left_frame,relief=RAISED, width=20, text="Show Result",cursor="hand2",command=print(),font=("Arial",15,"bold"),bg="white",fg="black")
-        b4.grid(row=4, column=0, padx=50, pady=button_pady)
+        b1=Button(relief=RAISED, width=20, text="PreprocesingData",cursor="hand2",command=self.model.preprocessing,font=("Arial",15,"bold"),bg="white",fg="black")
+        b1.place(x=30, y=70)
+        b2=Button(relief=RAISED, width=20, text="Traning Data",cursor="hand2",command=self.model.training,font=("Arial",15,"bold"),bg="white",fg="black")
+        b2.place(x=30, y=130)
+        b3=Button(relief=RAISED, width=20, text="Prediction",cursor="hand2",command=self.model.prediction,font=("Arial",15,"bold"),bg="white",fg="black")
+        b3.place(x=30, y=190)
+        b4=Button(relief=RAISED, width=20, text="Show Result",cursor="hand2",command=print(),font=("Arial",15,"bold"),bg="white",fg="black")
+        b4.place(x=30, y=250)
         b1.bind("<Enter>", self.on_enter) 
         b1.bind("<Leave>", self.on_leave)
         b2.bind("<Enter>", self.on_enter) 
@@ -250,31 +228,31 @@ class LCD_CNN:
         b4.bind("<Enter>", self.on_enter) 
         b4.bind("<Leave>", self.on_leave)
         
-        # Create frames and labels in left_frame
-        # Label(left_frame, text='', bg='royal blue').grid(row=5, column=0, padx=5, pady=100)
-        Label(self.left_frame, text="text").grid(row=6, column=0, padx=5, pady=100)
+        # Lable to show state 
+        # Label(text="text").grid(row=6, column=0, padx=5, pady=100)
         
-        #RIGHT Frame
-        frame_width = 400
-        frame_height = 420
-
-        # Create the frame
-        self.right_frame = Frame(root, width=frame_width, height=frame_height, bg='grey')
-        self.right_frame.grid(row=1, column=1, columnspan=2, padx=5, pady=5)
-
-        # Path to the image file
-        image_path = "methodology.png"
-        my_image = ImageTk.PhotoImage(PIL.Image.open(image_path))
-        image_label = Label(self.right_frame, image=my_image)
-        image_label.grid(row=1, column=1,columnspan=2)
+        # Show image
+        image1 = Image.open("LungImages.png")
+        image1=image1.resize((700,500), PIL.Image.Resampling.LANCZOS)
+        test = ImageTk.PhotoImage(image1)
+        label1 = Label(image=test)
+        label1.image = test
+        # Position image
+        label1.place(x=300, y=70)
+        # label1.place_forget()
         
-        # Configure row and column weights to make the sub-frame expandable
-        self.right_frame.grid_rowconfigure(0, weight=1)
-        self.right_frame.grid_columnconfigure(0, weight=1)
-        self.right_frame.grid_rowconfigure(0, weight=1)
-        self.right_frame.grid_columnconfigure(0, weight=1)
+    def showimage():
+        image1 = Image.open("LungImages.png")
+        image1=image1.resize((700,500), PIL.Image.Resampling.LANCZOS)
+        test = ImageTk.PhotoImage(image1)
+        label1 = Label(image=test)
+        label1.image = test
+        # Position image
+        label1.place(x=300, y=70)
+        label1.place_forget()
         
 if __name__ == "__main__":
     root=Tk()
     obj=LCD_CNN(root)
     root.mainloop()
+ 
