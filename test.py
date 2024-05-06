@@ -8,6 +8,7 @@ import splitfolders
 import pandas as pd
 import numpy as np
 import seaborn as sns
+import subprocess
 
 from tkinter import *
 import PIL.Image
@@ -98,11 +99,12 @@ class Lung_Cancer_Model:
         lrd = tf.keras.callbacks.ReduceLROnPlateau(monitor = 'val_loss',patience = 3,verbose = 1,factor = 0.50, min_lr = 1e-7)
         mcp = tf.keras.callbacks.ModelCheckpoint('CNN.keras', save_best_only=True, mode='auto', monitor='val_accuracy')
         es = tf.keras.callbacks.EarlyStopping(verbose=1, patience=3)
+        
         self.CNN_history = self.CNN.fit(self.train_dataset,validation_data=self.valid_dataset, epochs = 36,verbose = 1, callbacks=[lrd,mcp,es], shuffle=True)
         CNN_scores = self.CNN.evaluate(self.test_dataset, verbose=1)
         self.plot_history(self.CNN_history, 'CNN')
-        self.save_history_plot(self.CNN_history, 'CNN', 'results/CNN_history_plot.png')
 
+    #Traning Graph 
     def plot_history(self, hist, name):
         fig, axs = plt.subplots(1, 3, figsize=(15, 5))
         axs[0].plot(hist.history['Accuracy'])
@@ -126,33 +128,7 @@ class Lung_Cancer_Model:
         axs[2].set_xlabel('Epoch')
         axs[2].legend(['train', 'val'], loc='upper left')
 
-        plt.show()
-
-    def save_history_plot(self, hist, name, filename):
-        fig, axs = plt.subplots(1, 3, figsize=(15, 5))
-        axs[0].plot(hist.history['accuracy'])
-        axs[0].plot(hist.history['val_accuracy'])
-        axs[0].set_title(f'{name} Accuracy')
-        axs[0].set_ylabel('Accuracy')
-        axs[0].set_xlabel('Epoch')
-        axs[0].legend(['train', 'val'], loc='upper left')
-
-        axs[1].plot(hist.history['loss'])
-        axs[1].plot(hist.history['val_loss'])
-        axs[1].set_title(f'{name} Loss')
-        axs[1].set_ylabel('Loss')
-        axs[1].set_xlabel('Epoch')
-        axs[1].legend(['train', 'val'], loc='upper left')
-
-        axs[2].plot(hist.history['precision'])
-        axs[2].plot(hist.history['val_precision'])
-        axs[2].set_title(f'{name} Precision')
-        axs[2].set_ylabel('Precision')
-        axs[2].set_xlabel('Epoch')
-        axs[2].legend(['train', 'val'], loc='upper left')
-
-        # Save the plot as an image file
-        plt.savefig(filename)  
+        plt.savefig('results/CNN_history_plot.png')
 
     def predAll(self, batch, i):
         label_dict = {0: 'Cancerous', 1: 'Non-Cancerous'}
@@ -181,7 +157,8 @@ class Lung_Cancer_Model:
         label = self.predAll(self.batch, 3)
         ax4.set_title(label)
         plt.suptitle('Predicted vs True labels')
-        plt.show()
+        # plt.show()
+        plt.savefig("results/sample_predictiction.png")
     
         
 class LCD_CNN:     
@@ -213,11 +190,11 @@ class LCD_CNN:
         button_pady = 10
         self.b1=Button(relief=RAISED, width=20, text="PreprocesingData",cursor="hand2",command=self.funtion1,font=("Arial",15,"bold"),bg="white",fg="black")
         self.b1.place(x=30, y=90)
-        self.b2=Button(relief=RAISED, width=20, text="Traning Data",cursor="hand2",command=self.model.training,font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b2=Button(relief=RAISED, width=20, text="Traning Data",cursor="hand2",command=self.function2, font=("Arial",15,"bold"),bg="white",fg="black")
         self.b2.place(x=30, y=150)
-        self.b3=Button(relief=RAISED, width=20, text="Prediction",cursor="hand2",command=self.model.prediction,font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b3=Button(relief=RAISED, width=20, text="Prediction",cursor="hand2",command=self.function3,font=("Arial",15,"bold"),bg="white",fg="black")
         self.b3.place(x=30, y=210)
-        self.b4=Button(relief=RAISED, width=20, text="Show Result",cursor="hand2",command=print(),font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b4=Button(relief=RAISED, width=20, text="Show Result",cursor="hand2",command=self.function4,font=("Arial",15,"bold"),bg="white",fg="black")
         self.b4.place(x=30, y=270)
         self.b1.bind("<Enter>", self.on_enter) 
         self.b1.bind("<Leave>", self.on_leave)
@@ -242,6 +219,7 @@ class LCD_CNN:
         # label1.place_forget()
         self.label1.image 
         
+    #buttons function
     def funtion1(self):
         # Run model procprocessing
         self.model.preprocessing()
@@ -260,7 +238,7 @@ class LCD_CNN:
         ax3 = plt.subplot(1, 3, 3)
         plt.imshow(cv2.cvtColor(segmentedImage, cv2.COLOR_BGR2RGB))
         ax3.set_title('Equalized & Segmented image')
-        plt.suptitle('Preprocessing Example')
+        plt.suptitle('Preprocessing Sample')
         
         plt.savefig("results/preprocessing.png")
         
@@ -268,9 +246,22 @@ class LCD_CNN:
         
         self.b1.bind("<Enter>", self.on_leave)
         self.b1["state"] = "disabled"
-        # self.b2.config(cursor="arrow") 
-        # self.b3["state"] = "normal"
-        # self.b3.config(cursor="hand2")
+        
+    def function2(self):  
+        self.model.training()
+        self.show_image('results/CNN_history_plot.png')
+        self.b2.bind("<Enter>", self.on_leave)
+        self.b2["state"] = "disabled"
+        
+    def function3(self):
+        self.model.prediction()
+        self.show_image("results/sample_predictiction.png")
+        self.b2.bind("<Enter>", self.on_leave)
+        self.b2["state"] = "disabled"
+        
+    def function4(self):
+        folder_path = "results"
+        subprocess.Popen(f'explorer "{folder_path}"')
         
     def showimage(self, image_path):
         self.label1.place_forget()
