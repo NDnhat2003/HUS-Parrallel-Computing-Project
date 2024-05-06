@@ -101,7 +101,7 @@ class Lung_Cancer_Model:
         self.CNN_history = self.CNN.fit(self.train_dataset,validation_data=self.valid_dataset, epochs = 36,verbose = 1, callbacks=[lrd,mcp,es], shuffle=True)
         CNN_scores = self.CNN.evaluate(self.test_dataset, verbose=1)
         self.plot_history(self.CNN_history, 'CNN')
-        # self.save_history_plot(self.CNN_history, 'CNN', 'CNN_history_plot.png')
+        self.save_history_plot(self.CNN_history, 'CNN', 'results/CNN_history_plot.png')
 
     def plot_history(self, hist, name):
         fig, axs = plt.subplots(1, 3, figsize=(15, 5))
@@ -211,22 +211,22 @@ class LCD_CNN:
         
         # Buttons
         button_pady = 10
-        b1=Button(relief=RAISED, width=20, text="PreprocesingData",cursor="hand2",command=self.model.preprocessing,font=("Arial",15,"bold"),bg="white",fg="black")
-        b1.place(x=30, y=70)
-        b2=Button(relief=RAISED, width=20, text="Traning Data",cursor="hand2",command=self.model.training,font=("Arial",15,"bold"),bg="white",fg="black")
-        b2.place(x=30, y=130)
-        b3=Button(relief=RAISED, width=20, text="Prediction",cursor="hand2",command=self.model.prediction,font=("Arial",15,"bold"),bg="white",fg="black")
-        b3.place(x=30, y=190)
-        b4=Button(relief=RAISED, width=20, text="Show Result",cursor="hand2",command=print(),font=("Arial",15,"bold"),bg="white",fg="black")
-        b4.place(x=30, y=250)
-        b1.bind("<Enter>", self.on_enter) 
-        b1.bind("<Leave>", self.on_leave)
-        b2.bind("<Enter>", self.on_enter) 
-        b2.bind("<Leave>", self.on_leave)
-        b3.bind("<Enter>", self.on_enter) 
-        b3.bind("<Leave>", self.on_leave)
-        b4.bind("<Enter>", self.on_enter) 
-        b4.bind("<Leave>", self.on_leave)
+        self.b1=Button(relief=RAISED, width=20, text="PreprocesingData",cursor="hand2",command=self.funtion1,font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b1.place(x=30, y=90)
+        self.b2=Button(relief=RAISED, width=20, text="Traning Data",cursor="hand2",command=self.model.training,font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b2.place(x=30, y=150)
+        self.b3=Button(relief=RAISED, width=20, text="Prediction",cursor="hand2",command=self.model.prediction,font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b3.place(x=30, y=210)
+        self.b4=Button(relief=RAISED, width=20, text="Show Result",cursor="hand2",command=print(),font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b4.place(x=30, y=270)
+        self.b1.bind("<Enter>", self.on_enter) 
+        self.b1.bind("<Leave>", self.on_leave)
+        self.b2.bind("<Enter>", self.on_enter) 
+        self.b2.bind("<Leave>", self.on_leave)
+        self.b3.bind("<Enter>", self.on_enter) 
+        self.b3.bind("<Leave>", self.on_leave)
+        self.b4.bind("<Enter>", self.on_enter) 
+        self.b4.bind("<Leave>", self.on_leave)
         
         # Lable to show state 
         # Label(text="text").grid(row=6, column=0, padx=5, pady=100)
@@ -235,21 +235,52 @@ class LCD_CNN:
         image1 = Image.open("LungImages.png")
         image1=image1.resize((700,500), PIL.Image.Resampling.LANCZOS)
         test = ImageTk.PhotoImage(image1)
-        label1 = Label(image=test)
-        label1.image = test
+        self.label1 = Label(image=test)
+        self.label1.image = test
         # Position image
-        label1.place(x=300, y=70)
+        self.label1.place(x=300, y=80)
         # label1.place_forget()
+        self.label1.image 
         
-    def showimage():
-        image1 = Image.open("LungImages.png")
-        image1=image1.resize((700,500), PIL.Image.Resampling.LANCZOS)
+    def funtion1(self):
+        # Run model procprocessing
+        self.model.preprocessing()
+        
+        #Run test processing method in a image
+        img = cv2.imread('rawData/squamous.cell.carcinoma/squamous.cell.carcinoma1.png', 0)
+        equalizedImage = cv2.equalizeHist(img)
+        e, segmentedImage = cv2.threshold(equalizedImage, 128, 255, cv2.THRESH_TOZERO)
+        plt.figure(figsize=(20, 6))
+        ax1 = plt.subplot(1, 3, 1)
+        plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+        ax1.set_title('Raw image')
+        ax2 = plt.subplot(1, 3, 2)
+        plt.imshow(cv2.cvtColor(equalizedImage, cv2.COLOR_BGR2RGB))
+        ax2.set_title('Equalized image')
+        ax3 = plt.subplot(1, 3, 3)
+        plt.imshow(cv2.cvtColor(segmentedImage, cv2.COLOR_BGR2RGB))
+        ax3.set_title('Equalized & Segmented image')
+        plt.suptitle('Preprocessing Example')
+        
+        plt.savefig("results/preprocessing.png")
+        
+        self.showimage("results/preprocessing.png")
+        
+        self.b1.bind("<Enter>", self.on_leave)
+        self.b1["state"] = "disabled"
+        # self.b2.config(cursor="arrow") 
+        # self.b3["state"] = "normal"
+        # self.b3.config(cursor="hand2")
+        
+    def showimage(self, image_path):
+        self.label1.place_forget()
+        image1 = Image.open(image_path)
+        image1=image1.resize((700,400), PIL.Image.Resampling.LANCZOS)
         test = ImageTk.PhotoImage(image1)
-        label1 = Label(image=test)
-        label1.image = test
+        self.label1 = Label(image=test)
+        self.label1.image = test
         # Position image
-        label1.place(x=300, y=70)
-        label1.place_forget()
+        self.label1.place(x=300, y=70)
         
 if __name__ == "__main__":
     root=Tk()
