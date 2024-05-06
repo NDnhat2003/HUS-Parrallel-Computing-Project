@@ -256,8 +256,8 @@ class LCD_CNN:
     def function3(self):
         self.model.prediction()
         self.show_image("results/sample_predictiction.png")
-        self.b2.bind("<Enter>", self.on_leave)
-        self.b2["state"] = "disabled"
+        self.b3.bind("<Enter>", self.on_leave)
+        self.b3["state"] = "disabled"
         
     def function4(self):
         folder_path = "results"
