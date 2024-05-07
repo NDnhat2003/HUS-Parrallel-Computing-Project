@@ -188,13 +188,13 @@ class LCD_CNN:
         
         # Buttons
         button_pady = 10
-        self.b1=Button(relief=RAISED, width=20, text="PreprocesingData",cursor="hand2",command=self.funtion1,font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b1=Button(relief=RAISED, width=20, text="PreprocesingData",command=self.funtion1,font=("Arial",15,"bold"),bg="white",fg="black")
         self.b1.place(x=30, y=90)
-        self.b2=Button(relief=RAISED, width=20, text="Traning Data",cursor="hand2",command=self.function2, font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b2=Button(relief=RAISED, width=20, text="Traning Data",command=self.function2, font=("Arial",15,"bold"),bg="white",fg="black")
         self.b2.place(x=30, y=150)
-        self.b3=Button(relief=RAISED, width=20, text="Prediction",cursor="hand2",command=self.function3,font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b3=Button(relief=RAISED, width=20, text="Prediction",command=self.function3,font=("Arial",15,"bold"),bg="white",fg="black")
         self.b3.place(x=30, y=210)
-        self.b4=Button(relief=RAISED, width=20, text="Show Result",cursor="hand2",command=self.function4,font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b4=Button(relief=RAISED, width=20, text="Show Result",command=self.function4,font=("Arial",15,"bold"),bg="white",fg="black")
         self.b4.place(x=30, y=270)
         self.b1.bind("<Enter>", self.on_enter) 
         self.b1.bind("<Leave>", self.on_leave)
@@ -218,8 +218,8 @@ class LCD_CNN:
         self.label1.place(x=300, y=80)
         # label1.place_forget()
         self.label1.image 
-        
-    #buttons function
+
+    #button function
     def funtion1(self):
         # Run model procprocessing
         self.model.preprocessing()
@@ -242,31 +242,29 @@ class LCD_CNN:
         
         plt.savefig("results/preprocessing.png")
         
-        self.showimage("results/preprocessing.png")
-        
+        self.show_image("results/preprocessing.png", 700, 300)
         self.b1.bind("<Enter>", self.on_leave)
         self.b1["state"] = "disabled"
         
     def function2(self):  
         self.model.training()
-        self.show_image('results/CNN_history_plot.png')
+        self.show_image('results/CNN_history_plot.png', 700, 300)
         self.b2.bind("<Enter>", self.on_leave)
         self.b2["state"] = "disabled"
         
     def function3(self):
         self.model.prediction()
-        self.show_image("results/sample_predictiction.png")
-        self.b3.bind("<Enter>", self.on_leave)
-        self.b3["state"] = "disabled"
-        
+        self.show_image("results/sample_predictiction.png", 700, 500)
+        self.b2.bind("<Enter>", self.on_leave)
+        self.b2["state"] = "disabled"
     def function4(self):
         folder_path = "results"
         subprocess.Popen(f'explorer "{folder_path}"')
         
-    def showimage(self, image_path):
+    def show_image(self, image_path, w, h):
         self.label1.place_forget()
         image1 = Image.open(image_path)
-        image1=image1.resize((700,400), PIL.Image.Resampling.LANCZOS)
+        image1=image1.resize((w,h), PIL.Image.Resampling.LANCZOS)
         test = ImageTk.PhotoImage(image1)
         self.label1 = Label(image=test)
         self.label1.image = test
