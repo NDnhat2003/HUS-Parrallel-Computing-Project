@@ -224,7 +224,7 @@ class LCD_CNN:
         # Run model procprocessing
         self.model.preprocessing()
         
-        #Run test processing method in a image
+        #Run a processing method on a image
         img = cv2.imread('rawData/squamous.cell.carcinoma/squamous.cell.carcinoma1.png', 0)
         equalizedImage = cv2.equalizeHist(img)
         e, segmentedImage = cv2.threshold(equalizedImage, 128, 255, cv2.THRESH_TOZERO)
@@ -255,8 +255,9 @@ class LCD_CNN:
     def function3(self):
         self.model.prediction()
         self.show_image("results/sample_predictiction.png", 700, 500)
-        self.b2.bind("<Enter>", self.on_leave)
-        self.b2["state"] = "disabled"
+        self.b3.bind("<Enter>", self.on_leave)
+        self.b3["state"] = "disabled"
+        
     def function4(self):
         folder_path = "results"
         subprocess.Popen(f'explorer "{folder_path}"')
