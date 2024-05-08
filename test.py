@@ -8,8 +8,9 @@ import splitfolders
 import pandas as pd
 import numpy as np
 import seaborn as sns
-import subprocess
+import time
 
+import subprocess
 from tkinter import *
 import PIL.Image
 from PIL import Image, ImageTk
@@ -53,6 +54,7 @@ class Lung_Cancer_Model:
         self.CNN = tf.keras.Sequential()
         self.CNN_history = None
         self.batch = next(self.test_dataset)
+        self.cnn()
     
     def preprocessing(self):
         if not os.path.exists(self.DEST_DIR):
@@ -91,18 +93,45 @@ class Lung_Cancer_Model:
         self.CNN.add(tf.keras.layers.Dense(units=64, activation='relu'))
         self.CNN.add(tf.keras.layers.Dropout(rate=0.25))
         self.CNN.add(tf.keras.layers.Dense(units=1, activation='sigmoid'))
-        self.CNN.compile(optimizer='adam',
-                    loss=tf.keras.losses.binary_crossentropy, metrics=self.METRICS)  
+        # self.CNN.compile(optimizer='adam',
+        #             loss=tf.keras.losses.binary_crossentropy, metrics=self.METRICS)  
          
-    def training(self):
-        self.cnn()
+    def parallel_training(self):
+        strategy = tf.distribute.MirroredStrategy()
+        self.CNN.compile(optimizer='adam', loss=tf.keras.losses.binary_crossentropy, metrics=self.METRICS)
+        with strategy.scope():
+            lrd = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', patience=3, verbose=1, factor=0.50, min_lr=1e-7)
+            mcp = tf.keras.callbacks.ModelCheckpoint('CNN.keras', save_best_only=True, mode='auto', monitor='val_accuracy')
+            es = tf.keras.callbacks.EarlyStopping(verbose=1, patience=3)
+    
+        # Measure training time 
+        start_time = time.time()
+        self.CNN_history = self.CNN.fit(self.train_dataset, validation_data=self.valid_dataset, epochs=36, verbose=1,
+                                        callbacks=[lrd, mcp, es], shuffle=True)
+        self.CNN.evaluate(self.test_dataset, verbose=1)
+        end_time = time.time()
+        
+        #Summary Result
+        self.plot_history(self.CNN_history, 'CNN')
+        print('Training Time: ', end_time - start_time)
+    
+    def sequence_training(self):
+        self.CNN.compile(optimizer='adam', loss=tf.keras.losses.binary_crossentropy, metrics=self.METRICS)
+        
         lrd = tf.keras.callbacks.ReduceLROnPlateau(monitor = 'val_loss',patience = 3,verbose = 1,factor = 0.50, min_lr = 1e-7)
         mcp = tf.keras.callbacks.ModelCheckpoint('CNN.keras', save_best_only=True, mode='auto', monitor='val_accuracy')
         es = tf.keras.callbacks.EarlyStopping(verbose=1, patience=3)
         
-        self.CNN_history = self.CNN.fit(self.train_dataset,validation_data=self.valid_dataset, epochs = 36,verbose = 1, callbacks=[lrd,mcp,es], shuffle=True)
-        CNN_scores = self.CNN.evaluate(self.test_dataset, verbose=1)
+        # Measure training time 
+        start_time = time.time()
+        self.CNN_history = self.CNN.fit(self.train_dataset, validation_data=self.valid_dataset, epochs=36, verbose=1,
+                                        callbacks=[lrd, mcp, es], shuffle=True)
+        self.CNN.evaluate(self.test_dataset, verbose=1)
+        end_time = time.time()
+        
+        #Summary Result
         self.plot_history(self.CNN_history, 'CNN')
+        print('Training Time: ', end_time - start_time)
 
     #Traning Graph 
     def plot_history(self, hist, name):
@@ -187,15 +216,18 @@ class LCD_CNN:
         self.model = Lung_Cancer_Model()
         
         # Buttons
-        button_pady = 10
-        self.b1=Button(relief=RAISED, width=20, text="PreprocesingData",command=self.funtion1,font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b1=Button(relief=RAISED, width=20, text="Preprocesing Data",command=self.funtion1,font=("Arial",15,"bold"),bg="white",fg="black")
         self.b1.place(x=30, y=90)
-        self.b2=Button(relief=RAISED, width=20, text="Traning Data",command=self.function2, font=("Arial",15,"bold"),bg="white",fg="black")
-        self.b2.place(x=30, y=150)
+        Label(text="Choose Training Type:", font=("Arial",8,"bold")).place(x=30, y=150)
+        self.b2=Button(relief=RAISED, width=9, text="Parallel",command=self.function2, font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b2.place(x=30, y=175)
+        self.b5=Button(relief=RAISED, width=9, text="Sequence",command=self.function5, font=("Arial",15,"bold"),bg="white",fg="black")
+        self.b5.place(x=160, y=175)
         self.b3=Button(relief=RAISED, width=20, text="Prediction",command=self.function3,font=("Arial",15,"bold"),bg="white",fg="black")
-        self.b3.place(x=30, y=210)
+        self.b3.place(x=30, y=230)
         self.b4=Button(relief=RAISED, width=20, text="Show Result",command=self.function4,font=("Arial",15,"bold"),bg="white",fg="black")
-        self.b4.place(x=30, y=270)
+        self.b4.place(x=30, y=290)
+        
         self.b1.bind("<Enter>", self.on_enter) 
         self.b1.bind("<Leave>", self.on_leave)
         self.b2.bind("<Enter>", self.on_enter) 
@@ -204,9 +236,12 @@ class LCD_CNN:
         self.b3.bind("<Leave>", self.on_leave)
         self.b4.bind("<Enter>", self.on_enter) 
         self.b4.bind("<Leave>", self.on_leave)
+        self.b5.bind("<Enter>", self.on_enter) 
+        self.b5.bind("<Leave>", self.on_leave)
+        
         
         # Lable to show state 
-        # Label(text="text").grid(row=6, column=0, padx=5, pady=100)
+        
         
         # Show image
         image1 = Image.open("LungImages.png")
@@ -224,7 +259,7 @@ class LCD_CNN:
         # Run model procprocessing
         self.model.preprocessing()
         
-        #Run a processing method on a image
+        #Run test processing method in a image
         img = cv2.imread('rawData/squamous.cell.carcinoma/squamous.cell.carcinoma1.png', 0)
         equalizedImage = cv2.equalizeHist(img)
         e, segmentedImage = cv2.threshold(equalizedImage, 128, 255, cv2.THRESH_TOZERO)
@@ -246,21 +281,31 @@ class LCD_CNN:
         self.b1.bind("<Enter>", self.on_leave)
         self.b1["state"] = "disabled"
         
-    def function2(self):  
-        self.model.training()
+    def function5(self):  
+        self.model.sequence_training()
         self.show_image('results/CNN_history_plot.png', 700, 300)
         self.b2.bind("<Enter>", self.on_leave)
         self.b2["state"] = "disabled"
+        self.b5.bind("<Enter>", self.on_leave)
+        self.b5["state"] = "disabled"
         
     def function3(self):
         self.model.prediction()
         self.show_image("results/sample_predictiction.png", 700, 500)
-        self.b3.bind("<Enter>", self.on_leave)
-        self.b3["state"] = "disabled"
-        
+        self.b2.bind("<Enter>", self.on_leave)
+        self.b2["state"] = "disabled"
     def function4(self):
         folder_path = "results"
         subprocess.Popen(f'explorer "{folder_path}"')
+        
+    def function2(self):
+        self.model.parallel_training()
+        self.show_image('results/CNN_history_plot.png', 700, 300)
+        self.b2.bind("<Enter>", self.on_leave)
+        self.b2["state"] = "disabled"
+        self.b5.bind("<Enter>", self.on_leave)
+        self.b5["state"] = "disabled"
+        
         
     def show_image(self, image_path, w, h):
         self.label1.place_forget()
