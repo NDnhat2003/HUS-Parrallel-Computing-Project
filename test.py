@@ -21,11 +21,6 @@ class Lung_Cancer_Model:
         self.CATS = ['adenocarcinoma', 'large.cell.carcinoma', 'normal', 'squamous.cell.carcinoma']
         self.DEST_DIR = "data"
         self.FINAL_DIR = 'processedData'
-        self.METRICS = [
-        tf.keras.metrics.BinaryAccuracy(name='Accuracy'),
-        tf.keras.metrics.Precision(name='Precision'),
-        tf.keras.metrics.Recall(name='Recall'),  
-        ]
         self.BATCH_SIZE=32
         self.train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale = 1./255, validation_split = 0.2,
                                                                         rotation_range=5,
@@ -51,10 +46,8 @@ class Lung_Cancer_Model:
                                                     class_mode = 'binary',
                                                     batch_size = 32)
         
-        self.CNN = tf.keras.Sequential()
-        self.CNN_history = None
         self.batch = next(self.test_dataset)
-        self.cnn()
+        self.CNN = tf.keras.Sequential()
     
     def preprocessing(self):
         if not os.path.exists(self.DEST_DIR):
@@ -80,57 +73,69 @@ class Lung_Cancer_Model:
         print("SUCCESS!")
     
     #Neural net
-    def cnn(self):
-        self.CNN.add(tf.keras.layers.Conv2D(filters=16, kernel_size=(3, 3), activation='relu', input_shape=(224, 224, 3)))
-        self.CNN.add(tf.keras.layers.Conv2D(filters=36, kernel_size=(3, 3), activation='relu'))
-        self.CNN.add(tf.keras.layers.MaxPool2D(pool_size=(2, 2)))
-        self.CNN.add(tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
-        self.CNN.add(tf.keras.layers.MaxPool2D(pool_size=(2, 2)))
-        self.CNN.add(tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), activation='relu'))
-        self.CNN.add(tf.keras.layers.MaxPool2D(pool_size=(2, 2)))
-        self.CNN.add(tf.keras.layers.Dropout(rate=0.25))
-        self.CNN.add(tf.keras.layers.Flatten())
-        self.CNN.add(tf.keras.layers.Dense(units=64, activation='relu'))
-        self.CNN.add(tf.keras.layers.Dropout(rate=0.25))
-        self.CNN.add(tf.keras.layers.Dense(units=1, activation='sigmoid'))
+    def cnn(self, CNN):
+        CNN.add(tf.keras.layers.Conv2D(filters=16, kernel_size=(3, 3), activation='relu', input_shape=(224, 224, 3)))
+        CNN.add(tf.keras.layers.Conv2D(filters=36, kernel_size=(3, 3), activation='relu'))
+        CNN.add(tf.keras.layers.MaxPool2D(pool_size=(2, 2)))
+        CNN.add(tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
+        CNN.add(tf.keras.layers.MaxPool2D(pool_size=(2, 2)))
+        CNN.add(tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), activation='relu'))
+        CNN.add(tf.keras.layers.MaxPool2D(pool_size=(2, 2)))
+        CNN.add(tf.keras.layers.Dropout(rate=0.25))
+        CNN.add(tf.keras.layers.Flatten())
+        CNN.add(tf.keras.layers.Dense(units=64, activation='relu'))
+        CNN.add(tf.keras.layers.Dropout(rate=0.25))
+        CNN.add(tf.keras.layers.Dense(units=1, activation='sigmoid'))
         # self.CNN.compile(optimizer='adam',
         #             loss=tf.keras.losses.binary_crossentropy, metrics=self.METRICS)  
          
     def parallel_training(self):
         strategy = tf.distribute.MirroredStrategy()
-        self.CNN.compile(optimizer='adam', loss=tf.keras.losses.binary_crossentropy, metrics=self.METRICS)
         with strategy.scope():
+            METRICS = [
+            tf.keras.metrics.BinaryAccuracy(name='Accuracy'),
+            tf.keras.metrics.Precision(name='Precision'),
+            tf.keras.metrics.Recall(name='Recall'),  
+            ]
+            self.CNN = tf.keras.Sequential()
+            self.cnn(self.CNN)
+            self.CNN.compile(optimizer='adam', loss=tf.keras.losses.binary_crossentropy, metrics=METRICS)
             lrd = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', patience=3, verbose=1, factor=0.50, min_lr=1e-7)
             mcp = tf.keras.callbacks.ModelCheckpoint('CNN.keras', save_best_only=True, mode='auto', monitor='val_accuracy')
             es = tf.keras.callbacks.EarlyStopping(verbose=1, patience=3)
-    
-        # Measure training time 
-        start_time = time.time()
-        self.CNN_history = self.CNN.fit(self.train_dataset, validation_data=self.valid_dataset, epochs=36, verbose=1,
+            start_time = time.time()
+            CNN_history = self.CNN.fit(self.train_dataset, validation_data=self.valid_dataset, epochs=36, verbose=1,
                                         callbacks=[lrd, mcp, es], shuffle=True)
-        self.CNN.evaluate(self.test_dataset, verbose=1)
-        end_time = time.time()
+            self.CNN.evaluate(self.test_dataset, verbose=1)
+
+            end_time = time.time()
         
         #Summary Result
-        self.plot_history(self.CNN_history, 'CNN')
+        self.plot_history(CNN_history, 'CNN')
         print('Training Time: ', end_time - start_time)
     
     def sequence_training(self):
-        self.CNN.compile(optimizer='adam', loss=tf.keras.losses.binary_crossentropy, metrics=self.METRICS)
-        
+        start_time = time.time()
+        METRICS = [
+            tf.keras.metrics.BinaryAccuracy(name='Accuracy'),
+            tf.keras.metrics.Precision(name='Precision'),
+            tf.keras.metrics.Recall(name='Recall'),  
+            ]
+    
+        self.cnn(self.CNN)
+        self.CNN.compile(optimizer='adam', loss=tf.keras.losses.binary_crossentropy, metrics=METRICS)
+    
         lrd = tf.keras.callbacks.ReduceLROnPlateau(monitor = 'val_loss',patience = 3,verbose = 1,factor = 0.50, min_lr = 1e-7)
         mcp = tf.keras.callbacks.ModelCheckpoint('CNN.keras', save_best_only=True, mode='auto', monitor='val_accuracy')
         es = tf.keras.callbacks.EarlyStopping(verbose=1, patience=3)
-        
-        # Measure training time 
-        start_time = time.time()
-        self.CNN_history = self.CNN.fit(self.train_dataset, validation_data=self.valid_dataset, epochs=36, verbose=1,
+    
+        CNN_history = self.CNN.fit(self.train_dataset, validation_data=self.valid_dataset, epochs=36, verbose=1,
                                         callbacks=[lrd, mcp, es], shuffle=True)
         self.CNN.evaluate(self.test_dataset, verbose=1)
         end_time = time.time()
         
         #Summary Result
-        self.plot_history(self.CNN_history, 'CNN')
+        self.plot_history(CNN_history, 'CNN')
         print('Training Time: ', end_time - start_time)
 
     #Traning Graph 
