@@ -100,15 +100,15 @@ class Lung_Cancer_Model:
             self.CNN = tf.keras.Sequential()
             self.cnn(self.CNN)
             self.CNN.compile(optimizer='adam', loss=tf.keras.losses.binary_crossentropy, metrics=METRICS)
-            lrd = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', patience=3, verbose=1, factor=0.50, min_lr=1e-7)
-            mcp = tf.keras.callbacks.ModelCheckpoint('CNN.keras', save_best_only=True, mode='auto', monitor='val_accuracy')
-            es = tf.keras.callbacks.EarlyStopping(verbose=1, patience=3)
-            start_time = time.time()
-            CNN_history = self.CNN.fit(self.train_dataset, validation_data=self.valid_dataset, epochs=36, verbose=1,
-                                        callbacks=[lrd, mcp, es], shuffle=True)
-            self.CNN.evaluate(self.test_dataset, verbose=1)
+        lrd = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', patience=3, verbose=1, factor=0.50, min_lr=1e-7)
+        mcp = tf.keras.callbacks.ModelCheckpoint('CNN.keras', save_best_only=True, mode='auto', monitor='val_accuracy')
+        es = tf.keras.callbacks.EarlyStopping(verbose=1, patience=3)
+        start_time = time.time()
+        CNN_history = self.CNN.fit(self.train_dataset, validation_data=self.valid_dataset, epochs=36, verbose=1,
+                                    callbacks=[lrd, mcp, es], shuffle=True)
+        self.CNN.evaluate(self.test_dataset, verbose=1)
 
-            end_time = time.time()
+        end_time = time.time()
         
         #Summary Result
         self.plot_history(CNN_history, 'CNN')
