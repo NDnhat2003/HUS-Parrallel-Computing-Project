@@ -91,6 +91,19 @@ class Lung_Cancer_Model:
          
     def parallel_training(self):
         strategy = tf.distribute.MirroredStrategy()
+        new_batch_size = self.BATCH_SIZE*strategy.num_replicas_in_sync
+        self.train_dataset  = self.train_datagen.flow_from_directory(directory = 'processedData/train',
+                                                    target_size = (224,224),
+                                                    class_mode = 'binary',
+                                                    batch_size = new_batch_size)
+        self.valid_dataset = self.valid_datagen.flow_from_directory(directory = 'processedData/val',
+                                                    target_size = (224,224),
+                                                    class_mode = 'binary',
+                                                    batch_size = new_batch_size)
+        self.test_dataset = self.test_datagen.flow_from_directory(directory = 'processedData/test',
+                                                    target_size = (224,224),
+                                                    class_mode = 'binary',
+                                                    batch_size = new_batch_size)
         with strategy.scope():
             METRICS = [
             tf.keras.metrics.BinaryAccuracy(name='Accuracy'),
